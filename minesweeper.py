@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import copy
 
+# completed
+# Makes the horizontal and vertical lines in immage
 def makemineImage(mineImage,blocks,pixelPerBlock):
 	(rows,cols) = mineImage.shape
 	# print("rows.cols",rows,cols)
@@ -17,6 +19,8 @@ def makemineImage(mineImage,blocks,pixelPerBlock):
 
 	return mineImage
 
+# completed
+# randomly places mines on the grid
 def placeMines(mineMatrix,mineImage,mines,blocks,pixelPerBlock):
 
 	# Shufling indexes to get mine blocks
@@ -46,6 +50,7 @@ def placeMines(mineMatrix,mineImage,mines,blocks,pixelPerBlock):
 
 	return mineMatrix
 
+# Completed
 def placeNeighbouringNoofMines(mineMatrix,neighbours,mineImage,blocks,pixelPerBlock):
 	(rows,cols) = mineMatrix.shape
 	checkNeighbours = [[0,1],[1,1],[1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1]]
@@ -79,18 +84,18 @@ def placeNeighbouringNoofMines(mineMatrix,neighbours,mineImage,blocks,pixelPerBl
 			if neighbours[i][j] != 0:
 				mineImage = cv2.putText(mineImage, str(neighbours[i][j]),(pixelPerBlock*j+spacing,pixelPerBlock*i+spacing+spacing) , font,fontScale, gray, thickness, cv2.LINE_AA)
 	cv2.imshow("Mine Sweeper",mineImage)
-	# cv2.waitKey(0)
+	cv2.waitKey(0)
 
 	return neighbours
 
-
-def openingAlgorithm(x,y):
+# working ON
+def openingAlgorithm(x,y,playingMineImage):
 	# Getting the right block from x,y coords
 	(x,y) = (int(x/pixelPerBlock),int(y/pixelPerBlock))
 	print("Chosen block is",x,y)
 
-	# Cond: if the place not empty
-	if mineMatrix[x][y] != 0:
+	# Cond: if the place not empty (for neighbors)
+	if mineMatrix[y][x] == 0 and neighbours[y][x] != 0:
 		# cv2.rectangle(mineImage,(pixelPerBlock*x,pixelPerBlock*y),(pixelPerBlock*x+pixelPerBlock,pixelPerBlock*y+pixelPerBlock),white,fillthickness)
 		# mineImage = cv2.putText(mineImage, str(neighbours[i][j]),(pixelPerBlock*j+spacing,pixelPerBlock*i+spacing+spacing) , font,fontScale, gray, thickness, cv2.LINE_AA)
 		cv2.rectangle(playingMineImage,(pixelPerBlock*x,pixelPerBlock*y),(pixelPerBlock*x+pixelPerBlock,pixelPerBlock*y+pixelPerBlock),white,fillthickness)
@@ -98,33 +103,40 @@ def openingAlgorithm(x,y):
 
 	# Cond: If place has bomb
 	elif mineMatrix[x][y] == mine:
+		print("Found a mine")
 		pass
 
 	# Cond: if place is empty
 	else:
+		print("Empty cell")
 		pass
 
+	return playingMineImage
 
 	
 
-def getLocation(event,x,y,flags,param):
+def getLocation(event,x,y,flags,playingMineImage):
 
 	if event == cv2.EVENT_LBUTTONDOWN:
 		print("Mouse Clicked at",x,y)
-		openingAlgorithm(x,y)
+		# print("EVEnt {} flags {} params {}".format(event,flags,playingMineImage))
+		playingMineImage=openingAlgorithm(x,y,playingMineImage)
 
 	if event == cv2.EVENT_RBUTTONDBLCLK:
 		pass 
 
-def mousePointer():
+	return playingMineImage
+
+def mousePointer(playingMineImage):
 	cv2.namedWindow("Mine Sweepers")
-	cv2.setMouseCallback("Mine Sweepers",getLocation)
+	cv2.setMouseCallback("Mine Sweepers",getLocation,playingMineImage)
 	print("mousePointer\n")
 
 	while True:
 		cv2.imshow("Mine Sweepers",playingMineImage)
 		if cv2.waitKey(33) == 27:
 			break
+		# cv2.waitKey(30)
 
 
 
@@ -154,13 +166,14 @@ if __name__ == '__main__':
 	playingMineImage = copy.copy(mineImage)
 	mineMatrix = placeMines(mineMatrix,mineImage,mines,blocks,pixelPerBlock)
 	neighbours = placeNeighbouringNoofMines(mineMatrix,neighbours,mineImage,blocks,pixelPerBlock)
-	mousePointer()
-	# openingAlgorithm()
-	print("mineMatrix\n",mineMatrix)
-	print("neighbours\n",neighbours)
+	mousePointer(playingMineImage)
 
-	cv2.imshow("Mine Sweepers",playingMineImage)
-	cv2.waitKey(0)
+	# openingAlgorithm()
+	print("mineMatrix\n",mineMatrix, mineMatrix[0][6],mineMatrix[6][0],mineMatrix[5][0])
+	print("neighbours\n",neighbours, neighbours[4][2],neighbours[1][4])
+
+	# cv2.imshow("Mine Sweepers",playingMineImage)
+	# cv2.waitKey(10)
 
 	events = [i for i in dir(cv2) if 'EVENT' in i]
 	# print( events )
